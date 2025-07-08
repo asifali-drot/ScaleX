@@ -1,4 +1,6 @@
-const port = 3000;
+require("dotenv").config();
+
+const port = process.env.PORT || 3000;
 const express = require("express");
 const app = express();
 const mongoose = require("mongoose");
@@ -11,7 +13,7 @@ const { type } = require("os");
 
 app.use(express.json());
 app.use(cors());
-mongoose.connect("mongodb+srv://greatstackdev:greatstackdev@cluster0.ahjkt.mongodb.net/e-commerce")
+mongoose.connect(process.env.MONGODB_URI)
 
 app.get("/", (req, res) => {
     res.send("Express is Runnings")
@@ -30,7 +32,7 @@ app.use('/images', express.static('upload/images'))
 app.post("/uploads", upload.single('product'), (req, res) => {
     res.json({
         success: 1,
-        image_url: `http://localhost:${port}/images/${req.file.filename}`
+        image_url: `${req.protocol}://${req.get("host")}/images/${req.file.filename}`
     })
 })
 
@@ -158,7 +160,7 @@ app.post('/signup', async (req, res) => {
             id: user.id
         }
     }
-    const token = jwt.sign(data, 'secret_ecom');
+    const token = jwt.sign(data, process.env.JWT_SECRET);
     res.json({ success: true, token })
 })
 
@@ -205,7 +207,7 @@ const fetchuser = async (req, res, next) => {
     }
     else {
         try {
-            const data = jwt.verify(token, 'secret_ecom');
+            const data = jwt.verify(token, process.env.JWT_SECRET);
             req.user = data.user;
             next();
         } catch (error) {
